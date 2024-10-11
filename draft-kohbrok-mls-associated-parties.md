@@ -23,7 +23,7 @@ title: "MLS Associated parties"
 abbrev: "MLSAP"
 category: info
 
-docname: draft-todo-yourname-protocol-latest
+docname: draft-kohbrok-mls-associated-parties-latest
 submissiontype: IETF  # also: "independent", "editorial", "IAB", or "IRTF"
 number:
 date:
