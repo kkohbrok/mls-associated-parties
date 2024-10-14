@@ -28,6 +28,10 @@ author:
     fullname: "Konrad Kohbrok"
     organization: Phoenix R&D
     email: "konrad.kohbrok@datashrine.de"
+ -
+    fullname: "Raphael Robert"
+    organization: Phoenix R&D
+    email: "ietf@raphaelrobert.com"
 
 normative:
 
