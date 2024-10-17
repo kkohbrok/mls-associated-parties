@@ -188,7 +188,7 @@ ap_commit_base_secret =
 ~~~
 
 From the `ap_commit_base_secret`, the committer derives the `ap_commit_secret`
-and the `ap_commit_secret_id`. 
+and the `ap_commit_secret_id`.
 
 ~~~ tls
 ap_commit_secret = DeriveSecret(ap_commit_base_secret, "AP Commit Secret")
@@ -207,7 +207,7 @@ struct {
   opaque ap_commit_secret_id<V>;
 } AssociatedPartyCommitEncryptionContext;
 
-(kem_output, ciphertext) = 
+(kem_output, ciphertext) =
   SafeEncryptWithContext(0xXXXX, external_pub, context, ap_commit_base_secret)
 ~~~
 
@@ -220,7 +220,7 @@ Both associated party and all other group members finally derive the
 `ap_commit_secret_id` and the `ap_commit_secret`. They compare the
 `ap_commit_secret_id` to the one they received along with the ciphertext to
 ensure that everyone got the same base secret. The `ap_commit_secret` is later
-used to compute the new epoch of the associated party key schedule. 
+used to compute the new epoch of the associated party key schedule.
 
 TODO: We probably want a distinct WireFormat for the message with `kem_output`,
 `ciphertext and `ap_commit_secret_id`. That message should also be authenticated
@@ -234,7 +234,7 @@ HPKE-encrypting it to the public key in the group’s ExternalPub GroupInfo
 extension (if present). The associated party then includes the resulting HPKE
 ciphertext in an AssociatedPartySecret proposal and sends it to the group. That
 secret is injected into the associated party key schedule in the epoch in which
-it is committed. 
+it is committed.
 
 ~~~ tls
 struct {
