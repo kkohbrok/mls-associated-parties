@@ -17,9 +17,8 @@ with another party that is not a full member of the group.
        This document describes a safe extension to do just that. 
     " name="description">
 <meta content="xml2rfc 3.23.2" name="generator">
-<meta content="next generation" name="keyword">
-<meta content="unicorn" name="keyword">
-<meta content="sparkling distributed ledger" name="keyword">
+<meta content="security" name="keyword">
+<meta content="messaging layer security" name="keyword">
 <meta content="draft-kohbrok-mls-associated-parties-latest" name="ietf.draft">
 <!-- Generator version information:
   xml2rfc 3.23.2
@@ -1370,16 +1369,19 @@ struct {
 } AssociatedPartyExportContext
 
 ap_commit_base_secret =
-  ExpandWithLabel(ap_exporter_secret, "AP Commit Base Secret", context, KDF.Nh)
+  ExpandWithLabel(ap_exporter_secret, "AP Commit Base Secret",
+                    context, KDF.Nh)
 </pre><a href="#section-5-2" class="pilcrow">¶</a>
 </div>
 <p id="section-5-3">From the <code>ap_commit_base_secret</code>, the committer derives the <code>ap_commit_secret</code>
 and the <code>ap_commit_secret_id</code>.<a href="#section-5-3" class="pilcrow">¶</a></p>
 <div class="lang-tls sourcecode" id="section-5-4">
 <pre>
-ap_commit_secret = DeriveSecret(ap_commit_base_secret, "AP Commit Secret")
+ap_commit_secret =
+  DeriveSecret(ap_commit_base_secret, "AP Commit Secret")
 
-ap_commit_secret_id = DeriveSecret(ap_commit_base_secret, "AP Commit Secret ID")
+ap_commit_secret_id =
+  DeriveSecret(ap_commit_base_secret, "AP Commit Secret ID")
 </pre><a href="#section-5-4" class="pilcrow">¶</a>
 </div>
 <p id="section-5-5">The committer then encrypts the <code>ap_commit_base_secret</code> with an
@@ -1394,7 +1396,8 @@ struct {
 } AssociatedPartyCommitEncryptionContext;
 
 (kem_output, ciphertext) =
-  SafeEncryptWithContext(0xXXXX, external_pub, context, ap_commit_base_secret)
+  SafeEncryptWithContext(0xXXXX, external_pub, context,
+                          ap_commit_base_secret)
 </pre><a href="#section-5-6" class="pilcrow">¶</a>
 </div>
 <p id="section-5-7"><code>kem_output</code>, <code>ciphertext</code> and the <code>ap_commit_secret_id</code> are sent as a separate

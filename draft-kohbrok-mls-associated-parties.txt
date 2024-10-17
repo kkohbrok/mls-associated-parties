@@ -221,14 +221,17 @@ ap_proposal_secret (or 0) --> KDF.Extract
    } AssociatedPartyExportContext
 
    ap_commit_base_secret =
-     ExpandWithLabel(ap_exporter_secret, "AP Commit Base Secret", context, KDF.Nh)
+     ExpandWithLabel(ap_exporter_secret, "AP Commit Base Secret",
+                       context, KDF.Nh)
 
    From the ap_commit_base_secret, the committer derives the
    ap_commit_secret and the ap_commit_secret_id.
 
-   ap_commit_secret = DeriveSecret(ap_commit_base_secret, "AP Commit Secret")
+   ap_commit_secret =
+     DeriveSecret(ap_commit_base_secret, "AP Commit Secret")
 
-   ap_commit_secret_id = DeriveSecret(ap_commit_base_secret, "AP Commit Secret ID")
+   ap_commit_secret_id =
+     DeriveSecret(ap_commit_base_secret, "AP Commit Secret ID")
 
    The committer then encrypts the ap_commit_base_secret with an
    AssociatedPartyCommitEncryptionContext as context, where
@@ -241,7 +244,8 @@ ap_proposal_secret (or 0) --> KDF.Extract
    } AssociatedPartyCommitEncryptionContext;
 
    (kem_output, ciphertext) =
-     SafeEncryptWithContext(0xXXXX, external_pub, context, ap_commit_base_secret)
+     SafeEncryptWithContext(0xXXXX, external_pub, context,
+                             ap_commit_base_secret)
 
    kem_output, ciphertext and the ap_commit_secret_id are sent as a
    separate message stapled to the commit.  The associated party can
