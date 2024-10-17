@@ -133,33 +133,98 @@ where fresh randomness is injected with each epoch and a secret from the old
 epoch is used to seed the next. Associated party key schedules are separate for
 each associated party.
 
-
-TODO: For all sections below, specify how exactly the keys are derived.
-
-TODO: Add visual showing the flow of the key schedule like in the MLS RFC.
+~~~ aasvg
+                         ap_init_secret_[n-1]
+                                 |
+                                 |
+                                 V
+         ap_commit_secret --> KDF.Extract
+                                 |
+                                 |
+                                 V
+ap_proposal_secret (or 0) --> KDF.Extract
+                                 |
+                                 |
+                                 V
+                         ExpandWithLabel(., "ap_epoch", GroupContext_[n], KDF.Nh)
+                                 |
+                                 |
+                                 V
+                           ap_epoch_secret
+                                 |
+                                 |
+                                 +--> DeriveSecret(., "ap_exporter")
+                                 |    = ap_exporter_secret
+                                 |
+                                 V
+                           DeriveSecret(., "init")
+                                 |
+                                 |
+                                 V
+                           init_secret_[n]
+~~~
+{: title="The Associated Party Key Schedule" #ap-key-schedule }
 
 # Injecting randomness with each commit
 
-Whenever a group member creates a commit, it exports the
-AssociatedPartyCommitBaseSecret from the group’s key schedule (of the new epoch)
-for each associated party. From the AssociatedPartyCommitBaseSecret, the
-committer derives the AssociatedPartyCommitSecret and the
-AssociatedPartyCommitSecretId. The committer then HPKE-encrypts the
-AssociatedPartyCommitSecret to the encryption_key in the LeafNode of the
-associated party, using the AssociatedPartyCommitSecretId as AAD. 
+Whenever a group member creates a commit, it exports the `ap_exporter_secret`
+from the group’s `epoch_secret` (of the new epoch). The `ap_exporter_secret` is
+then used to derive the `ap_commit_base_secret` for each associated party, where
+`context` is the AssociatedPartyExportContext with `ap_index` as the associated
+party's index in the AssociatedParties extension and `leaf_node` as the
+associated party's LeafNode.
 
-The HPKE ciphertext and the AssociatedPartyCommitSecretId are sent as a separate
+~~~ tls
+ap_exporter_secret =
+  DeriveExtensionSecret(epoch_secret, "AP Exporter Secret")
+
+struct {
+  u32 ap_index;
+  LeafNode leaf_node;
+} AssociatedPartyExportContext
+
+ap_commit_base_secret =
+  ExpandWithLabel(ap_exporter_secret, "AP Commit Base Secret", context, KDF.Nh)
+~~~
+
+From the `ap_commit_base_secret`, the committer derives the `ap_commit_secret`
+and the `ap_commit_secret_id`. 
+
+~~~ tls
+ap_commit_secret = DeriveSecret(ap_commit_base_secret, "AP Commit Secret")
+
+ap_commit_secret_id = DeriveSecret(ap_commit_base_secret, "AP Commit Secret ID")
+~~~
+
+The committer then encrypts the `ap_commit_base_secret` with an
+AssociatedPartyCommitEncryptionContext as `context`, where `group_context` is
+the context of the group's new epoch.
+
+~~~ tls
+struct {
+  opaque label = "AP Commit Secret";
+  GroupContext group_context;
+  opaque ap_commit_secret_id<V>;
+} AssociatedPartyCommitEncryptionContext;
+
+(kem_output, ciphertext) = 
+  SafeEncryptWithContext(0xXXXX, external_pub, context, ap_commit_base_secret)
+~~~
+
+`kem_output`, `ciphertext` and the `ap_commit_secret_id` are sent as a separate
 message stapled to the commit. The associated party can decrypt the ciphertext
-to get the AssociatedPartyCommitBaseSecret. Other group members receiving the
-commit export the AssociatedPartyCommitBaseSecret from the key schedule of the
-new epoch.
+to get the `ap_commit_base_secret`. Other group members receiving the commit
+export the `ap_commit_base_secret` from the key schedule of the new epoch.
 
 Both associated party and all other group members finally derive the
-AssociatedPartyCommitSecretId and the AssociatedPartyCommitSecret. They compare
-the AssociatedPartyCommitSecretId to the one they received along with the
-ciphertext to ensure that everyone got the same base secret. The
-AssociatedPartyCommitSecret is later used to compute the new epoch of the
-associated party key schedule. 
+`ap_commit_secret_id` and the `ap_commit_secret`. They compare the
+`ap_commit_secret_id` to the one they received along with the ciphertext to
+ensure that everyone got the same base secret. The `ap_commit_secret` is later
+used to compute the new epoch of the associated party key schedule. 
+
+TODO: We probably want a distinct WireFormat for the message with `kem_output`,
+`ciphertext and `ap_commit_secret_id`. That message should also be authenticated
+using a signature.
 
 ## Randomness contributions from associated parties
 
@@ -171,28 +236,40 @@ ciphertext in an AssociatedPartySecret proposal and sends it to the group. That
 secret is injected into the associated party key schedule in the epoch in which
 it is committed. 
 
+~~~ tls
+struct {
+  opaque associated_party_proposal_secret<V>;
+} AssociatedPartySecret;
+~~~
+
+TODO: Since the `ap_commit_secret`s come from the MLS key schedule and any
+AssociatedPartySecret proposals are included in the transcript, the group should
+always be in agreement on what the AP key schedule looks like. Is additional
+binding necessary by injecting something from the AP key schedule back into the
+MLS key schedule?
+
 ## Computing a new key schedule epoch and exporting secrets
 
-In each epoch, the AssociatedPartyInitSecret of the previous epoch, the
-AssociatedPartyCommitSecret of this epoch, as well as any secrets from
+In each epoch, the `ap_init_secret` of the previous epoch, the
+`ap_commit_secret` of this epoch, as well as any secrets from
 AssociatedPartySecret proposals are used to derive this epoch’s
-AssociatedPartyEpochSecret. If the associated party was added in this epoch, the
-AssociatedPartyInitSecret of the past epoch is 0. Just like in the MLS key
-schedule, the GroupContext is used as context in the operation to derive the
-AssociatedPartyEpochSecret.
+`ap_epoch_secret` as shown in {{ap-key-schedule}}. If the associated party was
+added in this epoch, the `ap_init_secret` of the past epoch is 0. Just like in
+the MLS key schedule, the GroupContext is used as context in the operation to
+derive the `ap_epoch_secret`.
 
-The AssociatedPartyEpochSecret is used to derive two secrets: The
-AssociatedPartyInitSecret of this epoch and the AssociatedPartyExporterSecret.
-The former is stored until the next epoch starts. The latter is used to seed a
-PPRF from which the application or other extensions can sample further secrets,
-domain-separated by an application-provided string or the extension ID.
+The `ap_epoch_secret` is used to derive two secrets: The `ap_init_secret` of
+this epoch and the `ap_exporter_secret`. The former is stored until the next
+epoch starts. The latter is used to seed a PPRF from which the application or
+other extensions can sample further secrets, domain-separated by an
+application-provided string or the extension ID.
 
-All AssociatedParty-secrets are deleted after use.
+All `ap_`-secrets are deleted after use.
 
 # Sharing associated party secrets with new group members
 
 When adding new group members via Welcome messages, the current
-AssociatedPartyInitSecrets of all associated parties are included in an
+`ap_init_secret`s of all associated parties are included in an
 AssociatedPartySecrets GroupInfo extension, ordered per associated party
 according to the `associated_parties` vector in the group's AssociatedParties
 extension.
@@ -206,7 +283,7 @@ struct {
 When a new member joins via external commit, it creates the HPKE ciphertext and
 key id in the same way as a normal committer would. When deriving the secrets
 for the new epoch of the associated party key schedule, the
-AssociatedPartyInitSecret is set to 0.
+`ap_init_secret` is set to 0.
 
 
 # Security Considerations
