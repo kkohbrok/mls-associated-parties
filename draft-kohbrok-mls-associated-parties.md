@@ -12,9 +12,8 @@ v: 3
 area: "Security"
 workgroup: "Messaging Layer Security"
 keyword:
- - next generation
- - unicorn
- - sparkling distributed ledger
+ - security
+ - messaging layer security
 venue:
   group: "Messaging Layer Security"
   type: "Working Group"
@@ -184,16 +183,19 @@ struct {
 } AssociatedPartyExportContext
 
 ap_commit_base_secret =
-  ExpandWithLabel(ap_exporter_secret, "AP Commit Base Secret", context, KDF.Nh)
+  ExpandWithLabel(ap_exporter_secret, "AP Commit Base Secret",
+                    context, KDF.Nh)
 ~~~
 
 From the `ap_commit_base_secret`, the committer derives the `ap_commit_secret`
 and the `ap_commit_secret_id`.
 
 ~~~ tls
-ap_commit_secret = DeriveSecret(ap_commit_base_secret, "AP Commit Secret")
+ap_commit_secret =
+  DeriveSecret(ap_commit_base_secret, "AP Commit Secret")
 
-ap_commit_secret_id = DeriveSecret(ap_commit_base_secret, "AP Commit Secret ID")
+ap_commit_secret_id =
+  DeriveSecret(ap_commit_base_secret, "AP Commit Secret ID")
 ~~~
 
 The committer then encrypts the `ap_commit_base_secret` with an
@@ -208,7 +210,8 @@ struct {
 } AssociatedPartyCommitEncryptionContext;
 
 (kem_output, ciphertext) =
-  SafeEncryptWithContext(0xXXXX, external_pub, context, ap_commit_base_secret)
+  SafeEncryptWithContext(0xXXXX, external_pub, context,
+                          ap_commit_base_secret)
 ~~~
 
 `kem_output`, `ciphertext` and the `ap_commit_secret_id` are sent as a separate
