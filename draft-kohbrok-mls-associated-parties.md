@@ -68,8 +68,8 @@ The mechanism makes the following assumptions:
 
 - All associated parties keep track of the group state on a per-commit basis
   including the group’s RatchetTree and GroupInfo
-- All external parties publish LeafNodes that can be retrieved by group members
-  to add the owner to a group as an associated party
+- All external parties publish AssociatedPartyEntries that can be retrieved by
+  group members to add the owner to a group as an associated party
 
 # Overview
 
@@ -80,6 +80,65 @@ for each such party).
 The key material of each epoch carries over to the previous epoch, where new key
 material is injected into the key schedule with each commit.
 
+# Associated party entries
+
+Any party that wants to be eligible as an associated party to an MLS group must
+publish the key material required.
+
+~~~ tls
+enum {
+  reserved(0),
+  published(1),
+  update(2),
+  (255)
+} AssociatedPartyEntrySource;
+
+struct {
+  HPKEPublicKey encryption_key;
+  SignaturePublicKey signature_key;
+  Credential credential;
+  AssociatedPartyEntrySource source;
+  select (AssociatedPartyEntry.source) {
+    case published:
+        Lifetime lifetime;
+
+    case update:
+        struct{};
+  };
+} AssociatedPartyEntry
+
+struct {
+    HPKEPublicKey encryption_key;
+    SignaturePublicKey signature_key;
+    Credential credential;
+
+    AssociatedPartyEntrySource source;
+    select (AssociatedPartyEntryTBS.source) {
+        case published:
+            Lifetime lifetime;
+        case update:
+            struct{};
+    };
+
+    select (AssociatedPartyEntryTBS.source) {
+        case published:
+            struct{};
+
+        case update:
+            opaque group_id<V>;
+            uint32 leaf_index;
+    };
+} AssociatedPartyEntryTBS
+~~~
+
+All published AssociatedPartyEntries MUST have their `source` set to
+`published`.
+
+Open Question: Do we want an extension version in these structs?
+
+Open Question: Do we want to support AP capabilities? That would allow us to
+support AP extensions as well.
+
 # Managing associated parties of a group
 
 AssociatedParties of a group are listed in the AssociatedParties GroupContext
@@ -87,7 +146,7 @@ extension.
 
 ~~~ tls
 struct {
-  LeafNode associated_parties<V>;
+  AssociatedPartyEntry associated_parties<V>;
 } AssociatedParties
 ~~~
 
@@ -96,7 +155,7 @@ sending Add- or RemoveAssociatedParty proposals.
 
 ~~~ tls
 struct {
-  LeafNode new_party;
+  AssociatedPartyEntry new_party;
 } AddAssociatedParty
 
 struct {
@@ -104,25 +163,31 @@ struct {
 } RemoveAssociatedParty
 ~~~
 
+Any AssociatedPartyEntry in an AddAssociatedParty proposal MUST have `source`
+set to `published`.
+
 Associated parties act as external senders and can additionally send
 UpdateAssociatedParty proposals to update their own key material.
 
 ~~~ tls
 struct {
-  LeafNode updated_party;
+  AssociatedPartyEntry updated_party;
 } UpdateAssociatedParty
 ~~~
+
+Any AssociatedPartyEntry in an UpdateAssociatedParty proposal MUST have `source`
+set to `update`.
 
 When a group member commits one or more of theses proposals, the
 AssociatedParties extension is updated accordingly.
 
 - The associated parties in the `removed_party_index`es of all
   RemoveAssociatedParty proposals are removed from the `associated_parties` vector.
-- The `new_party` LeafNodes in all AddAssociatedParty proposals are apended to
-  the `associated_parties` vector.
-- The LeafNode in the `associated_parties` vector of the senders of all
-  UpdateAssociatedParty proposals are replaced by the `update_party` in the
-  respective proposal.
+- The `new_party` AssociatedPartyEntry in all AddAssociatedParty proposals are
+  apended to the `associated_parties` vector.
+- The AssociatedPartyEntries in the `associated_parties` vector of the senders
+  of all UpdateAssociatedParty proposals are replaced by the `update_party` in
+  the respective proposal.
 
 # Associated party key schedule
 
@@ -170,8 +235,8 @@ Whenever a group member creates a commit, it exports the `ap_exporter_secret`
 from the group’s `epoch_secret` (of the new epoch). The `ap_exporter_secret` is
 then used to derive the `ap_commit_base_secret` for each associated party, where
 `context` is the AssociatedPartyExportContext with `ap_index` as the associated
-party's index in the AssociatedParties extension and `leaf_node` as the
-associated party's LeafNode.
+party's index in the AssociatedParties extension and `ap_entry` as the
+associated party's AssociatedPartyEntry.
 
 ~~~ tls
 ap_exporter_secret =
@@ -179,7 +244,7 @@ ap_exporter_secret =
 
 struct {
   u32 ap_index;
-  LeafNode leaf_node;
+  AssociatedPartyEntry ap_entry;
 } AssociatedPartyExportContext
 
 ap_commit_base_secret =
