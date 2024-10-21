@@ -5,7 +5,7 @@
 Messaging Layer Security                                      K. Kohbrok
 Internet-Draft                                                 R. Robert
 Intended status: Informational                               Phoenix R&D
-Expires: 20 April 2025                                   17 October 2024
+Expires: 24 April 2025                                   21 October 2024
 
 
                          MLS Associated parties
@@ -58,7 +58,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 20 April 2025.
+   This Internet-Draft will expire on 24 April 2025.
 
 Copyright Notice
 
@@ -78,14 +78,15 @@ Table of Contents
 
    1.  Introduction
    2.  Overview
-   3.  Managing associated parties of a group
-   4.  Associated party key schedule
-   5.  Injecting randomness with each commit
-     5.1.  Randomness contributions from associated parties
-     5.2.  Computing a new key schedule epoch and exporting secrets
-   6.  Sharing associated party secrets with new group members
-   7.  Security Considerations
-   8.  IANA Considerations
+   3.  Associated party entries
+   4.  Managing associated parties of a group
+   5.  Associated party key schedule
+   6.  Injecting randomness with each commit
+     6.1.  Randomness contributions from associated parties
+     6.2.  Computing a new key schedule epoch and exporting secrets
+   7.  Sharing associated party secrets with new group members
+   8.  Security Considerations
+   9.  IANA Considerations
    Acknowledgments
    Authors' Addresses
 
@@ -108,8 +109,9 @@ Table of Contents
    *  All associated parties keep track of the group state on a per-
       commit basis including the group’s RatchetTree and GroupInfo
 
-   *  All external parties publish LeafNodes that can be retrieved by
-      group members to add the owner to a group as an associated party
+   *  All external parties publish AssociatedPartyEntries that can be
+      retrieved by group members to add the owner to a group as an
+      associated party
 
 2.  Overview
 
@@ -121,32 +123,95 @@ Table of Contents
    where new key material is injected into the key schedule with each
    commit.
 
-3.  Managing associated parties of a group
+3.  Associated party entries
+
+   Any party that wants to be eligible as an associated party to an MLS
+   group must publish the key material required.
+
+   enum {
+     reserved(0),
+     published(1),
+     update(2),
+     (255)
+   } AssociatedPartyEntrySource;
+
+   struct {
+     HPKEPublicKey encryption_key;
+     SignaturePublicKey signature_key;
+     Credential credential;
+     AssociatedPartyEntrySource source;
+     select (AssociatedPartyEntry.source) {
+       case published:
+           Lifetime lifetime;
+
+       case update:
+           struct{};
+     };
+   } AssociatedPartyEntry
+
+   struct {
+       HPKEPublicKey encryption_key;
+       SignaturePublicKey signature_key;
+       Credential credential;
+
+       AssociatedPartyEntrySource source;
+       select (AssociatedPartyEntryTBS.source) {
+           case published:
+               Lifetime lifetime;
+           case update:
+               struct{};
+       };
+
+       select (AssociatedPartyEntryTBS.source) {
+           case published:
+               struct{};
+
+           case update:
+               opaque group_id<V>;
+               uint32 leaf_index;
+       };
+   } AssociatedPartyEntryTBS
+
+   All published AssociatedPartyEntries MUST have their source set to
+   published.
+
+   Open Question: Do we want an extension version in these structs?
+
+   Open Question: Do we want to support AP capabilities?  That would
+   allow us to support AP extensions as well.
+
+4.  Managing associated parties of a group
 
    AssociatedParties of a group are listed in the AssociatedParties
    GroupContext extension.
 
    struct {
-     LeafNode associated_parties<V>;
+     AssociatedPartyEntry associated_parties<V>;
    } AssociatedParties
 
    A group member can add or remove associated parties in the context of
    a group by sending Add- or RemoveAssociatedParty proposals.
 
    struct {
-     LeafNode new_party;
+     AssociatedPartyEntry new_party;
    } AddAssociatedParty
 
    struct {
      u32 removed_party_index;
    } RemoveAssociatedParty
 
+   Any AssociatedPartyEntry in an AddAssociatedParty proposal MUST have
+   source set to published.
+
    Associated parties act as external senders and can additionally send
    UpdateAssociatedParty proposals to update their own key material.
 
    struct {
-     LeafNode updated_party;
+     AssociatedPartyEntry updated_party;
    } UpdateAssociatedParty
+
+   Any AssociatedPartyEntry in an UpdateAssociatedParty proposal MUST
+   have source set to update.
 
    When a group member commits one or more of theses proposals, the
    AssociatedParties extension is updated accordingly.
@@ -155,14 +220,14 @@ Table of Contents
       RemoveAssociatedParty proposals are removed from the
       associated_parties vector.
 
-   *  The new_party LeafNodes in all AddAssociatedParty proposals are
-      apended to the associated_parties vector.
+   *  The new_party AssociatedPartyEntry in all AddAssociatedParty
+      proposals are apended to the associated_parties vector.
 
-   *  The LeafNode in the associated_parties vector of the senders of
-      all UpdateAssociatedParty proposals are replaced by the
+   *  The AssociatedPartyEntries in the associated_parties vector of the
+      senders of all UpdateAssociatedParty proposals are replaced by the
       update_party in the respective proposal.
 
-4.  Associated party key schedule
+5.  Associated party key schedule
 
    An associated party key schedule is a key schedule that group members
    share with an associated party.  It follows the same pattern as the
@@ -202,22 +267,22 @@ ap_proposal_secret (or 0) --> KDF.Extract
 
              Figure 1: The Associated Party Key Schedule
 
-5.  Injecting randomness with each commit
+6.  Injecting randomness with each commit
 
    Whenever a group member creates a commit, it exports the
    ap_exporter_secret from the group’s epoch_secret (of the new epoch).
    The ap_exporter_secret is then used to derive the
    ap_commit_base_secret for each associated party, where context is the
    AssociatedPartyExportContext with ap_index as the associated party's
-   index in the AssociatedParties extension and leaf_node as the
-   associated party's LeafNode.
+   index in the AssociatedParties extension and ap_entry as the
+   associated party's AssociatedPartyEntry.
 
    ap_exporter_secret =
      DeriveExtensionSecret(epoch_secret, "AP Exporter Secret")
 
    struct {
      u32 ap_index;
-     LeafNode leaf_node;
+     AssociatedPartyEntry ap_entry;
    } AssociatedPartyExportContext
 
    ap_commit_base_secret =
@@ -264,7 +329,7 @@ ap_proposal_secret (or 0) --> KDF.Extract
    kem_output, ciphertext andap_commit_secret_id`. That message should
    also be authenticated using a signature.
 
-5.1.  Randomness contributions from associated parties
+6.1.  Randomness contributions from associated parties
 
    Associated parties can also contribute secret key material to the
    shared key schedule.  An associated party can do so by sampling fresh
@@ -285,7 +350,7 @@ ap_proposal_secret (or 0) --> KDF.Extract
    looks like.  Is additional binding necessary by injecting something
    from the AP key schedule back into the MLS key schedule?
 
-5.2.  Computing a new key schedule epoch and exporting secrets
+6.2.  Computing a new key schedule epoch and exporting secrets
 
    In each epoch, the ap_init_secret of the previous epoch, the
    ap_commit_secret of this epoch, as well as any secrets from
@@ -304,7 +369,7 @@ ap_proposal_secret (or 0) --> KDF.Extract
 
    All ap_-secrets are deleted after use.
 
-6.  Sharing associated party secrets with new group members
+7.  Sharing associated party secrets with new group members
 
    When adding new group members via Welcome messages, the current
    ap_init_secrets of all associated parties are included in an
@@ -321,11 +386,11 @@ ap_proposal_secret (or 0) --> KDF.Extract
    When deriving the secrets for the new epoch of the associated party
    key schedule, the ap_init_secret is set to 0.
 
-7.  Security Considerations
+8.  Security Considerations
 
    TODO Security
 
-8.  IANA Considerations
+9.  IANA Considerations
 
    This document registers the AssociatedParties extension with ID
    0xXXXX.
