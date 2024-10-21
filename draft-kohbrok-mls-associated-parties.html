@@ -1422,7 +1422,7 @@ each associated party.<a href="#section-5-1" class="pilcrow">¶</a></p>
       <h2 id="name-injecting-randomness-with-e">
 <a href="#section-6" class="section-number selfRef">6. </a><a href="#name-injecting-randomness-with-e" class="section-name selfRef">Injecting randomness with each commit</a>
       </h2>
-<p id="section-6-1">Whenever a group member creates a commit, it exports the <code>ap_exporter_secret</code>
+<p id="section-6-1">Whenever a group member creates a commit, it exports the <code>associated_parties_secret</code>
 from the group’s <code>epoch_secret</code> (of the new epoch). The <code>ap_exporter_secret</code> is
 then used to derive the <code>ap_commit_base_secret</code> for each associated party, where
 <code>context</code> is the AssociatedPartyExportContext with <code>ap_index</code> as the associated
@@ -1430,7 +1430,7 @@ party's index in the AssociatedParties extension and <code>ap_entry</code> as th
 associated party's AssociatedPartyEntry.<a href="#section-6-1" class="pilcrow">¶</a></p>
 <div class="lang-tls sourcecode" id="section-6-2">
 <pre>
-ap_exporter_secret =
+associated_parties_secret =
   DeriveExtensionSecret(epoch_secret, "AP Exporter Secret")
 
 struct {
@@ -1439,7 +1439,7 @@ struct {
 } AssociatedPartyExportContext
 
 ap_commit_base_secret =
-  ExpandWithLabel(ap_exporter_secret, "AP Commit Base Secret",
+  ExpandWithLabel(associated_parties_secret, "AP Commit Base Secret",
                     context, KDF.Nh)
 </pre><a href="#section-6-2" class="pilcrow">¶</a>
 </div>
