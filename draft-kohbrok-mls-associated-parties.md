@@ -234,7 +234,7 @@ ap_proposal_secret (or 0) --> KDF.Extract
 
 # Injecting randomness with each commit
 
-Whenever a group member creates a commit, it exports the `ap_exporter_secret`
+Whenever a group member creates a commit, it exports the `associated_parties_secret`
 from the group’s `epoch_secret` (of the new epoch). The `ap_exporter_secret` is
 then used to derive the `ap_commit_base_secret` for each associated party, where
 `context` is the AssociatedPartyExportContext with `ap_index` as the associated
@@ -242,7 +242,7 @@ party's index in the AssociatedParties extension and `ap_entry` as the
 associated party's AssociatedPartyEntry.
 
 ~~~ tls
-ap_exporter_secret =
+associated_parties_secret =
   DeriveExtensionSecret(epoch_secret, "AP Exporter Secret")
 
 struct {
@@ -251,7 +251,7 @@ struct {
 } AssociatedPartyExportContext
 
 ap_commit_base_secret =
-  ExpandWithLabel(ap_exporter_secret, "AP Commit Base Secret",
+  ExpandWithLabel(associated_parties_secret, "AP Commit Base Secret",
                     context, KDF.Nh)
 ~~~
 
