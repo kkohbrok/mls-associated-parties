@@ -134,12 +134,15 @@ struct {
 All published AssociatedPartyEntries MUST have their `source` set to
 `published`.
 
+Published AssociatedPartyEntries can be retrieved by MLS group members for use
+in AddAssociatedParty proposals as described in {{managing-associated-parties}}.
+
 Open Question: Do we want an extension version in these structs?
 
 Open Question: Do we want to support AP capabilities? That would allow us to
 support AP extensions as well.
 
-# Managing associated parties of a group
+# Managing associated parties
 
 AssociatedParties of a group are listed in the AssociatedParties GroupContext
 extension.
