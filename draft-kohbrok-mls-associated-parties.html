@@ -1153,7 +1153,7 @@ with another party that is not a full member of the group.<a href="#section-abst
             <p id="section-toc.1-1.3.1" class="keepWithNext"><a href="#section-3" class="auto internal xref">3</a>.  <a href="#name-associated-party-entries" class="internal xref">Associated party entries</a></p>
 </li>
           <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.4">
-            <p id="section-toc.1-1.4.1"><a href="#section-4" class="auto internal xref">4</a>.  <a href="#name-managing-associated-parties" class="internal xref">Managing associated parties of a group</a></p>
+            <p id="section-toc.1-1.4.1"><a href="#section-4" class="auto internal xref">4</a>.  <a href="#name-managing-associated-parties" class="internal xref">Managing associated parties</a></p>
 </li>
           <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.5">
             <p id="section-toc.1-1.5.1"><a href="#section-5" class="auto internal xref">5</a>.  <a href="#name-associated-party-key-schedu" class="internal xref">Associated party key schedule</a></p>
@@ -1288,15 +1288,17 @@ struct {
 </div>
 <p id="section-3-3">All published AssociatedPartyEntries MUST have their <code>source</code> set to
 <code>published</code>.<a href="#section-3-3" class="pilcrow">¶</a></p>
-<p id="section-3-4">Open Question: Do we want an extension version in these structs?<a href="#section-3-4" class="pilcrow">¶</a></p>
-<p id="section-3-5">Open Question: Do we want to support AP capabilities? That would allow us to
-support AP extensions as well.<a href="#section-3-5" class="pilcrow">¶</a></p>
+<p id="section-3-4">Published AssociatedPartyEntries can be retrieved by MLS group members for use
+in AddAssociatedParty proposals as described in <a href="#managing-associated-parties" class="auto internal xref">Section 4</a>.<a href="#section-3-4" class="pilcrow">¶</a></p>
+<p id="section-3-5">Open Question: Do we want an extension version in these structs?<a href="#section-3-5" class="pilcrow">¶</a></p>
+<p id="section-3-6">Open Question: Do we want to support AP capabilities? That would allow us to
+support AP extensions as well.<a href="#section-3-6" class="pilcrow">¶</a></p>
 </section>
 </div>
-<div id="managing-associated-parties-of-a-group">
+<div id="managing-associated-parties">
 <section id="section-4">
       <h2 id="name-managing-associated-parties">
-<a href="#section-4" class="section-number selfRef">4. </a><a href="#name-managing-associated-parties" class="section-name selfRef">Managing associated parties of a group</a>
+<a href="#section-4" class="section-number selfRef">4. </a><a href="#name-managing-associated-parties" class="section-name selfRef">Managing associated parties</a>
       </h2>
 <p id="section-4-1">AssociatedParties of a group are listed in the AssociatedParties GroupContext
 extension.<a href="#section-4-1" class="pilcrow">¶</a></p>

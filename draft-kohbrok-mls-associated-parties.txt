@@ -79,7 +79,7 @@ Table of Contents
    1.  Introduction
    2.  Overview
    3.  Associated party entries
-   4.  Managing associated parties of a group
+   4.  Managing associated parties
    5.  Associated party key schedule
    6.  Injecting randomness with each commit
      6.1.  Randomness contributions from associated parties
@@ -175,12 +175,16 @@ Table of Contents
    All published AssociatedPartyEntries MUST have their source set to
    published.
 
+   Published AssociatedPartyEntries can be retrieved by MLS group
+   members for use in AddAssociatedParty proposals as described in
+   Section 4.
+
    Open Question: Do we want an extension version in these structs?
 
    Open Question: Do we want to support AP capabilities?  That would
    allow us to support AP extensions as well.
 
-4.  Managing associated parties of a group
+4.  Managing associated parties
 
    AssociatedParties of a group are listed in the AssociatedParties
    GroupContext extension.
