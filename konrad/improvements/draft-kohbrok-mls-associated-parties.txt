@@ -5,7 +5,7 @@
 Messaging Layer Security                                      K. Kohbrok
 Internet-Draft                                                 R. Robert
 Intended status: Informational                               Phoenix R&D
-Expires: 24 April 2025                                   21 October 2024
+Expires: 6 June 2025                                     3 December 2024
 
 
                          MLS Associated parties
@@ -58,7 +58,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 24 April 2025.
+   This Internet-Draft will expire on 6 June 2025.
 
 Copyright Notice
 
@@ -78,15 +78,18 @@ Table of Contents
 
    1.  Introduction
    2.  Overview
-   3.  Associated party entries
-   4.  Managing associated parties
+   3.  Associated partys
+     3.1.  Associated parties as external senders
+     3.2.  Managing associated parties
+   4.  Exporting the AP secrets
+     4.1.  Derivation from the MLS key schedule
+     4.2.  AP secret encryption
    5.  Associated party key schedule
-   6.  Injecting randomness with each commit
-     6.1.  Randomness contributions from associated parties
-     6.2.  Computing a new key schedule epoch and exporting secrets
-   7.  Sharing associated party secrets with new group members
-   8.  Security Considerations
-   9.  IANA Considerations
+     5.1.  Computing a new key schedule epoch and exporting secrets
+   6.  Sharing associated party secrets with new group members
+   7.  Security Considerations
+   8.  IANA Considerations
+   9.  Normative References
    Acknowledgments
    Authors' Addresses
 
@@ -101,100 +104,77 @@ Table of Contents
    *  All members of the group agree on the associated parties and their
       public key material
 
-   *  All members of the group agree on the key material shared with the
-      associated parties
+   *  All members of the group agree on the key material shared with
+      each associated party
 
    The mechanism makes the following assumptions:
 
    *  All associated parties keep track of the group state on a per-
       commit basis including the group’s RatchetTree and GroupInfo
 
-   *  All external parties publish AssociatedPartyEntries that can be
-      retrieved by group members to add the owner to a group as an
-      associated party
-
 2.  Overview
 
-   The mechanism sketched in this document is essentially a copy of the
-   MLS key schedule shared with an individual external party (with a
-   distinct key schedule for each such party).
+   The mechanism sketched in this document allows members of an MLS
+   group to add one or more associated parties (APs).  With each AP the
+   group shares secret key material that is evolved with each epoch in
+   the same fashion as the MLS key schedule.
 
-   The key material of each epoch carries over to the previous epoch,
-   where new key material is injected into the key schedule with each
-   commit.
+   The list of APs is part of the group state and thus covered by MLS'
+   group agreement properties.  APs can act as external senders and thus
+   send proposals to the group (but can't commit them).
 
-3.  Associated party entries
+   APs can be added, updated or removed by group members via proposals.
 
-   Any party that wants to be eligible as an associated party to an MLS
-   group must publish the key material required.
+3.  Associated partys
 
-   enum {
-     reserved(0),
-     published(1),
-     update(2),
-     (255)
-   } AssociatedPartyEntrySource;
+   An Associated party (AP) is represented in groups through
+   AssociatedPartyEntry struct, which contains the APs credential and
+   signature public key, as well as the HPKE encryption key to which the
+   shared key material is encrypted.
 
    struct {
      HPKEPublicKey encryption_key;
      SignaturePublicKey signature_key;
      Credential credential;
-     AssociatedPartyEntrySource source;
-     select (AssociatedPartyEntry.source) {
-       case published:
-           Lifetime lifetime;
-
-       case update:
-           struct{};
-     };
+     opaque signature;
    } AssociatedPartyEntry
 
    struct {
-       HPKEPublicKey encryption_key;
-       SignaturePublicKey signature_key;
-       Credential credential;
-
-       AssociatedPartyEntrySource source;
-       select (AssociatedPartyEntryTBS.source) {
-           case published:
-               Lifetime lifetime;
-           case update:
-               struct{};
-       };
-
-       select (AssociatedPartyEntryTBS.source) {
-           case published:
-               struct{};
-
-           case update:
-               opaque group_id<V>;
-               uint32 leaf_index;
-       };
+     HPKEPublicKey encryption_key;
+     SignaturePublicKey signature_key;
+     Credential credential;
    } AssociatedPartyEntryTBS
 
-   All published AssociatedPartyEntries MUST have their source set to
-   published.
+   The signature in an AssociatedPartyEntry MUST be a valid signature
+   under the signature_key over an AssociatedPartyEntryTBS with matching
+   fields.
 
-   Published AssociatedPartyEntries can be retrieved by MLS group
-   members for use in AddAssociatedParty proposals as described in
-   Section 4.
-
-   Open Question: Do we want an extension version in these structs?
-
-   Open Question: Do we want to support AP capabilities?  That would
-   allow us to support AP extensions as well.
-
-4.  Managing associated parties
-
-   AssociatedParties of a group are listed in the AssociatedParties
+   The APs of a group are listed in the group's AssociatedParties
    GroupContext extension.
 
    struct {
      AssociatedPartyEntry associated_parties<V>;
    } AssociatedParties
 
-   A group member can add or remove associated parties in the context of
-   a group by sending Add- or RemoveAssociatedParty proposals.
+3.1.  Associated parties as external senders
+
+   Associated parties can act as external senders and thus send external
+   proposals as specified in Section 12.1.8 of [RFC9420].  An AP that
+   sends an external proposal MUST use the external SenderType with an
+   index that is the number of entries in the group's external_senders
+   (0 if no such extension is present) plus its own index in the group's
+   AssociatedParties extension.  For external sender indices, the
+   AssociatedParties extension thus extends the external_senders
+   extension.
+
+   Recipients of a message sent by an AP MUST verify the message's
+   signature against the signature_key in the sender's
+   AssociatedPartyEntry.
+
+3.2.  Managing associated parties
+
+   APs can be added, removed or updated via Add-, Remove-, or
+   UpdateAssociatedParty proposals.
 
    struct {
      AssociatedPartyEntry new_party;
@@ -204,18 +184,9 @@ Table of Contents
      u32 removed_party_index;
    } RemoveAssociatedParty
 
-   Any AssociatedPartyEntry in an AddAssociatedParty proposal MUST have
-   source set to published.
-
-   Associated parties act as external senders and can additionally send
-   UpdateAssociatedParty proposals to update their own key material.
-
    struct {
      AssociatedPartyEntry updated_party;
    } UpdateAssociatedParty
-
-   Any AssociatedPartyEntry in an UpdateAssociatedParty proposal MUST
-   have source set to update.
 
    When a group member commits one or more of theses proposals, the
    AssociatedParties extension is updated accordingly.
@@ -231,58 +202,29 @@ Table of Contents
       senders of all UpdateAssociatedParty proposals are replaced by the
       update_party in the respective proposal.
 
-5.  Associated party key schedule
+   Open Question: Do we want to restrict UpdateAssociatedParty proposals
+   to be sent only by the affected AP?  If we don't do that, we may run
+   into the same problem as we do with KeyPackages, where key material
+   is "updated" to key material that is actually older than the current
+   one.
 
-   An associated party key schedule is a key schedule that group members
-   share with an associated party.  It follows the same pattern as the
-   main MLS key schedule, where fresh randomness is injected with each
-   epoch and a secret from the old epoch is used to seed the next.
-   Associated party key schedules are separate for each associated
-   party.
+4.  Exporting the AP secrets
 
-                         ap_init_secret_[n-1]
-                                 |
-                                 |
-                                 V
-         ap_commit_secret --> KDF.Extract
-                                 |
-                                 |
-                                 V
-ap_proposal_secret (or 0) --> KDF.Extract
-                                 |
-                                 |
-                                 V
-                         ExpandWithLabel(., "ap_epoch", GroupContext_[n], KDF.Nh)
-                                 |
-                                 |
-                                 V
-                           ap_epoch_secret
-                                 |
-                                 |
-                                 +--> DeriveSecret(., "ap_exporter")
-                                 |    = ap_exporter_secret
-                                 |
-                                 V
-                           DeriveSecret(., "init")
-                                 |
-                                 |
-                                 V
-                           init_secret_[n]
+   With each new epoch, new, distinct secrets are exported from the MLS
+   key schedule for each AP.  The secrets are then sent to the AP and
+   injected into the respective AP key schedules (see Section 5).
 
-             Figure 1: The Associated Party Key Schedule
+4.1.  Derivation from the MLS key schedule
 
-6.  Injecting randomness with each commit
-
-   Whenever a group member creates a commit, it exports the
-   associated_parties_secret from the group’s epoch_secret (of the new
-   epoch).  The ap_exporter_secret is then used to derive the
-   ap_commit_base_secret for each associated party, where context is the
-   AssociatedPartyExportContext with ap_index as the associated party's
-   index in the AssociatedParties extension and ap_entry as the
+   After a group member creates a commit, it exports the ap_secret from
+   the group’s new epoch_secret.  The ap_secret is then used to derive
+   the ap_commit_base_secret for each associated party, where context is
+   the AssociatedPartyExportContext with ap_index as the associated
+   party's index in the AssociatedParties extension and ap_entry as the
    associated party's AssociatedPartyEntry.
 
-   associated_parties_secret =
-     DeriveExtensionSecret(epoch_secret, "AP Exporter Secret")
+   ap_secret =
+     DeriveExtensionSecret(epoch_secret, "AP Secret")
 
    struct {
      u32 ap_index;
@@ -290,7 +232,7 @@ ap_proposal_secret (or 0) --> KDF.Extract
    } AssociatedPartyExportContext
 
    ap_commit_base_secret =
-     ExpandWithLabel(associated_parties_secret, "AP Commit Base Secret",
+     ExpandWithLabel(ap_secret, "AP Commit Base Secret",
                        context, KDF.Nh)
 
    From the ap_commit_base_secret, the committer derives the
@@ -301,6 +243,8 @@ ap_proposal_secret (or 0) --> KDF.Extract
 
    ap_commit_secret_id =
      DeriveSecret(ap_commit_base_secret, "AP Commit Secret ID")
+
+4.2.  AP secret encryption
 
    The committer then encrypts the ap_commit_base_secret with an
    AssociatedPartyCommitEncryptionContext as context, where
@@ -326,35 +270,58 @@ ap_proposal_secret (or 0) --> KDF.Extract
    ap_commit_secret_id and the ap_commit_secret.  They compare the
    ap_commit_secret_id to the one they received along with the
    ciphertext to ensure that everyone got the same base secret.  The
-   ap_commit_secret is later used to compute the new epoch of the
-   associated party key schedule.
+   ap_commit_secret is used to compute the new epoch of the associated
+   party key schedule as described in Section 5.
 
-   TODO: We probably want a distinct WireFormat for the message with
-   kem_output, ciphertext andap_commit_secret_id`. That message should
-   also be authenticated using a signature.
+   Open Question: Do we want a completely new message format here?  It
+   would probably be easier to extend the ContentType enum, which would
+   allow this document to re-use the PublicMessage semantics.  The
+   content should then consist of kem_output, ciphertext
+   andap_commit_secret_id`.
 
-6.1.  Randomness contributions from associated parties
+5.  Associated party key schedule
 
-   Associated parties can also contribute secret key material to the
-   shared key schedule.  An associated party can do so by sampling fresh
-   randomness and HPKE-encrypting it to the public key in the group’s
-   ExternalPub GroupInfo extension (if present).  The associated party
-   then includes the resulting HPKE ciphertext in an
-   AssociatedPartySecret proposal and sends it to the group.  That
-   secret is injected into the associated party key schedule in the
-   epoch in which it is committed.
+   The secrets exported from the MLS key schedule and sent to the APs as
+   described in Section 4 drive the AP key schedule, a simple key
+   schedule that mimics the MLS key schedule.  In each epoch, the newly
+   added key material is combined with the key material from the
+   previous epoch to derive the ap_init for the next epoch and the
+   ap_exporter.  The ap_exporter keys a puncturable pseudorandom
+   function (PPRF), which the application or other MLS extensions can
+   use to derive further secrets.
 
-   struct {
-     opaque associated_party_proposal_secret<V>;
-   } AssociatedPartySecret;
+                ap_init_secret_[n-1]
+                        |
+                        |
+                        V
+ap_commit_secret --> KDF.Extract
+                        |
+                        |
+                        V
+                ExpandWithLabel(., "ap_epoch", GroupContext_[n], KDF.Nh)
+                        |
+                        |
+                        V
+                  ap_epoch_secret
+                        |
+                        |
+                        +--> DeriveSecret(., "ap_exporter")
+                        |    = ap_exporter_secret
+                        |
+                        V
+                  DeriveSecret(., "init")
+                        |
+                        |
+                        V
+                ap_init_secret_[n]
 
-   TODO: Since the ap_commit_secrets come from the MLS key schedule and
-   any AssociatedPartySecret proposals are included in the transcript,
-   the group should always be in agreement on what the AP key schedule
-   looks like.  Is additional binding necessary by injecting something
-   from the AP key schedule back into the MLS key schedule?
+             Figure 1: The Associated Party Key Schedule
 
-6.2.  Computing a new key schedule epoch and exporting secrets
+   As the ap_commit_secret is distinct for each AP, each AP has its own
+   key schedule.  Key material is thus shared between the group and each
+   AP individually s.t.  APs don't share key material with one-another.
+
+5.1.  Computing a new key schedule epoch and exporting secrets
 
    In each epoch, the ap_init_secret of the previous epoch, the
    ap_commit_secret of this epoch, as well as any secrets from
@@ -373,7 +340,7 @@ ap_proposal_secret (or 0) --> KDF.Extract
 
    All ap_-secrets are deleted after use.
 
-7.  Sharing associated party secrets with new group members
+6.  Sharing associated party secrets with new group members
 
    When adding new group members via Welcome messages, the current
    ap_init_secrets of all associated parties are included in an
@@ -390,14 +357,21 @@ ap_proposal_secret (or 0) --> KDF.Extract
    When deriving the secrets for the new epoch of the associated party
    key schedule, the ap_init_secret is set to 0.
 
-8.  Security Considerations
+7.  Security Considerations
 
    TODO Security
 
-9.  IANA Considerations
+8.  IANA Considerations
 
    This document registers the AssociatedParties extension with ID
    0xXXXX.
+
+9.  Normative References
+
+   [RFC9420]  Barnes, R., Beurdouche, B., Robert, R., Millican, J.,
+              Omara, E., and K. Cohn-Gordon, "The Messaging Layer
+              Security (MLS) Protocol", RFC 9420, DOI 10.17487/RFC9420,
+              July 2023, <https://www.rfc-editor.org/rfc/rfc9420>.
 
 Acknowledgments
 
