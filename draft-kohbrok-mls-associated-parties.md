@@ -140,7 +140,7 @@ struct {
 } UpdateAssociatedParty
 ~~~
 
-When a group member commits one or more of theses proposals, the
+When a group member commits one or more of these proposals, the
 AssociatedParties extension is updated accordingly.
 
 - The associated parties in the `removed_party_index`es of all
@@ -271,7 +271,7 @@ ap_commit_secret --> KDF.Extract
 
 As the `ap_commit_secret` is distinct for each AP, each AP has its own key
 schedule. Key material is thus shared between the group and each AP individually
-s.t. APs don't share key material with one-another.
+such that APs don't share key material with one-another.
 
 ## Computing a new key schedule epoch and exporting secrets
 
