@@ -237,9 +237,9 @@ The secrets exported from the MLS key schedule and sent to the APs as described
 in {{exporting-the-ap-secrets}} drive the AP key schedule, a simple key schedule
 that mimics the MLS key schedule. In each epoch, the newly added key material is
 combined with the key material from the previous epoch to derive the `ap_init`
-for the next epoch and the `ap_exporter`. The `ap_exporter` keys a puncturable
-pseudorandom function (PPRF), which the application or other MLS extensions can
-use to derive further secrets.
+for the next epoch and the `ap_exporter`. The `ap_exporter` is used as input to
+a puncturable pseudorandom function (PPRF), which the application or other MLS
+extensions can use to derive further secrets.
 
 ~~~ aasvg
                 ap_init_secret_[n-1]
