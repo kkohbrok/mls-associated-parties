@@ -79,8 +79,7 @@ Table of Contents
    1.  Introduction
    2.  Overview
    3.  Associated partys
-     3.1.  Associated parties as external senders
-     3.2.  Managing associated parties
+     3.1.  Managing associated parties
    4.  Exporting the AP secrets
      4.1.  Derivation from the MLS key schedule
      4.2.  AP secret encryption
@@ -89,8 +88,8 @@ Table of Contents
    6.  Sharing associated party secrets with new group members
    7.  Security Considerations
    8.  IANA Considerations
-   9.  Normative References
    Acknowledgments
+   Contributors
    Authors' Addresses
 
 1.  Introduction
@@ -132,22 +131,24 @@ Table of Contents
    signature public key, as well as the HPKE encryption key to which the
    shared key material is encrypted.
 
+   Each AP MUST correspond to an external sender in the group's
+   external_senders extension.
+
    struct {
      HPKEPublicKey encryption_key;
-     SignaturePublicKey signature_key;
-     Credential credential;
+     uint32 external_sender_index;
      opaque signature;
    } AssociatedPartyEntry
 
    struct {
      HPKEPublicKey encryption_key;
-     SignaturePublicKey signature_key;
-     Credential credential;
+     uint32 external_sender_index;
    } AssociatedPartyEntryTBS
 
    The signature in an AssociatedPartyEntry MUST be a valid signature
-   under the signature_key over an AssociatedPartyEntryTBS with matching
-   fields.
+   under the signature_key of the external sender with index
+   external_sender_index the over an AssociatedPartyEntryTBS with
+   matching fields.
 
    The APs of a group are listed in the group's AssociatedParties
    GroupContext extension.
@@ -156,22 +157,7 @@ Table of Contents
      AssociatedPartyEntry associated_parties<V>;
    } AssociatedParties
 
-3.1.  Associated parties as external senders
-
-   Associated parties can act as external senders and thus send external
-   proposals as specified in Section 12.1.8 of [RFC9420].  An AP that
-   sends an external proposal MUST use the external SenderType with an
-   index that is the number of entries in the group's external_senders
-   (0 if no such extension is present) plus its own index in the group's
-   AssociatedParties extension.  For external sender indices, the
-   AssociatedParties extension thus extends the external_senders
-   extension.
-
-   Recipients of a message sent by an AP MUST verify the message's
-   signature against the signature_key in the sender's
-   AssociatedPartyEntry.
-
-3.2.  Managing associated parties
+3.1.  Managing associated parties
 
    APs can be added, removed or updated via Add-, Remove-, or
    UpdateAssociatedParty proposals.
@@ -286,9 +272,9 @@ Table of Contents
    schedule that mimics the MLS key schedule.  In each epoch, the newly
    added key material is combined with the key material from the
    previous epoch to derive the ap_init for the next epoch and the
-   ap_exporter.  The ap_exporter keys a puncturable pseudorandom
-   function (PPRF), which the application or other MLS extensions can
-   use to derive further secrets.
+   ap_exporter.  The ap_exporter is used as input to a puncturable
+   pseudorandom function (PPRF), which the application or other MLS
+   extensions can use to derive further secrets.
 
                 ap_init_secret_[n-1]
                         |
@@ -367,16 +353,15 @@ ap_commit_secret --> KDF.Extract
    This document registers the AssociatedParties extension with ID
    0xXXXX.
 
-9.  Normative References
-
-   [RFC9420]  Barnes, R., Beurdouche, B., Robert, R., Millican, J.,
-              Omara, E., and K. Cohn-Gordon, "The Messaging Layer
-              Security (MLS) Protocol", RFC 9420, DOI 10.17487/RFC9420,
-              July 2023, <https://www.rfc-editor.org/rfc/rfc9420>.
-
 Acknowledgments
 
    TODO acknowledge.
+
+Contributors
+
+   Rohan Mahy
+   Rohan Mahy Consulting Services
+
 
 Authors' Addresses
 
