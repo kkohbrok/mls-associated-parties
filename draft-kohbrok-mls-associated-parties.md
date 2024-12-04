@@ -92,23 +92,25 @@ An Associated party (AP) is represented in groups through AssociatedPartyEntry
 struct, which contains the APs credential and signature public key, as well as
 the HPKE encryption key to which the shared key material is encrypted.
 
+Each AP MUST correspond to an external sender in the group's `external_senders`
+extension.
+
 ~~~ tls
 struct {
   HPKEPublicKey encryption_key;
-  SignaturePublicKey signature_key;
-  Credential credential;
+  uint32 external_sender_index;
   opaque signature;
 } AssociatedPartyEntry
 
 struct {
   HPKEPublicKey encryption_key;
-  SignaturePublicKey signature_key;
-  Credential credential;
+  uint32 external_sender_index;
 } AssociatedPartyEntryTBS
 ~~~
 
 The `signature` in an AssociatedPartyEntry MUST be a valid signature under the
-`signature_key` over an AssociatedPartyEntryTBS with matching fields.
+`signature_key` of the external sender with index `external_sender_index` the
+over an AssociatedPartyEntryTBS with matching fields.
 
 The APs of a group are listed in the group's AssociatedParties GroupContext
 extension.
@@ -118,19 +120,6 @@ struct {
   AssociatedPartyEntry associated_parties<V>;
 } AssociatedParties
 ~~~
-
-## Associated parties as external senders
-
-Associated parties can act as external senders and thus send external proposals
-as specified in Section 12.1.8 of {{!RFC9420}}. An AP that sends an external
-proposal MUST use the `external` SenderType with an index that is the number of
-entries in the group's `external_senders` (0 if no such extension is present)
-plus its own index in the group's AssociatedParties extension. For external
-sender indices, the AssociatedParties extension thus extends the
-`external_senders` extension.
-
-Recipients of a message sent by an AP MUST verify the message's signature
-against the `signature_key` in the sender's AssociatedPartyEntry.
 
 ## Managing associated parties
 
