@@ -5,7 +5,7 @@
 Messaging Layer Security                                      K. Kohbrok
 Internet-Draft                                                 R. Robert
 Intended status: Informational                               Phoenix R&D
-Expires: 6 June 2025                                     3 December 2024
+Expires: 7 June 2025                                     4 December 2024
 
 
                          MLS Associated parties
@@ -58,7 +58,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 6 June 2025.
+   This Internet-Draft will expire on 7 June 2025.
 
 Copyright Notice
 
@@ -188,7 +188,7 @@ Table of Contents
      AssociatedPartyEntry updated_party;
    } UpdateAssociatedParty
 
-   When a group member commits one or more of theses proposals, the
+   When a group member commits one or more of these proposals, the
    AssociatedParties extension is updated accordingly.
 
    *  The associated parties in the removed_party_indexes of all
@@ -319,7 +319,8 @@ ap_commit_secret --> KDF.Extract
 
    As the ap_commit_secret is distinct for each AP, each AP has its own
    key schedule.  Key material is thus shared between the group and each
-   AP individually s.t.  APs don't share key material with one-another.
+   AP individually such that APs don't share key material with one-
+   another.
 
 5.1.  Computing a new key schedule epoch and exporting secrets
 
