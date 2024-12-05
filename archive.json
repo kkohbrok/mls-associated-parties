@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2024-12-03T00:13:49.153843+00:00",
+  "timestamp": "2024-12-05T00:12:49.407777+00:00",
   "repo": "kkohbrok/mls-associated-parties",
   "labels": [
     {
@@ -50,5 +50,97 @@
     }
   ],
   "issues": [],
-  "pulls": []
+  "pulls": [
+    {
+      "number": 1,
+      "id": "PR_kwDOM-05js6D6FCn",
+      "title": "Cutting, restructuring, more explanations",
+      "url": "https://github.com/kkohbrok/mls-associated-parties/pull/1",
+      "state": "OPEN",
+      "author": "kkohbrok",
+      "authorAssociation": "OWNER",
+      "assignees": [],
+      "labels": [],
+      "body": "This PR cuts some parts the usefulness of which was less clear like the concept of AP Entry publishing, lifetimes of AP Entries and the ability of APs to contribute randomness to the AP key schedule.\r\n\r\nThe PR also adds some more explanations that should make the document easier to understand. It also does some minor restructuring.",
+      "createdAt": "2024-12-03T15:09:05Z",
+      "updatedAt": "2024-12-04T07:23:14Z",
+      "baseRepository": "kkohbrok/mls-associated-parties",
+      "baseRefName": "main",
+      "baseRefOid": "0e9d7cd251daeaf035e68ed61caa7fa437415aee",
+      "headRepository": "kkohbrok/mls-associated-parties",
+      "headRefName": "konrad/improvements",
+      "headRefOid": "bb4416ab96f8bfcb651f6f9af35f788392dd5e3e",
+      "closedAt": null,
+      "mergedAt": null,
+      "mergedBy": null,
+      "mergeCommit": null,
+      "comments": [],
+      "reviews": [
+        {
+          "id": "PRR_kwDOM-05js6TnY8K",
+          "commit": {
+            "abbreviatedOid": "d51464f"
+          },
+          "author": "rohanmahy",
+          "authorAssociation": "NONE",
+          "state": "APPROVED",
+          "body": "",
+          "createdAt": "2024-12-03T19:11:11Z",
+          "updatedAt": "2024-12-03T19:26:50Z",
+          "comments": [
+            {
+              "originalPosition": 130,
+              "body": "I don't see that APs as external senders is strictly required. You could have the same entity in both the AP list and the external senders and everything would still work fine.",
+              "createdAt": "2024-12-03T19:11:11Z",
+              "updatedAt": "2024-12-03T19:26:50Z"
+            },
+            {
+              "originalPosition": 160,
+              "body": "```suggestion\r\nWhen a group member commits one or more of these proposals, the\r\n```",
+              "createdAt": "2024-12-03T19:12:24Z",
+              "updatedAt": "2024-12-03T19:26:50Z"
+            },
+            {
+              "originalPosition": 289,
+              "body": "Verb missing here:\r\n\"The `ap_exporter` keys [???] a puncturable\"",
+              "createdAt": "2024-12-03T19:24:37Z",
+              "updatedAt": "2024-12-03T19:26:50Z"
+            },
+            {
+              "originalPosition": 332,
+              "body": "```suggestion\r\nsuch that APs don't share key material with one-another.\r\n```",
+              "createdAt": "2024-12-03T19:25:51Z",
+              "updatedAt": "2024-12-03T19:26:50Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOM-05js6TqxMI",
+          "commit": {
+            "abbreviatedOid": "2120724"
+          },
+          "author": "kkohbrok",
+          "authorAssociation": "OWNER",
+          "state": "COMMENTED",
+          "body": "Thanks for the review and the suggestions!",
+          "createdAt": "2024-12-04T07:08:51Z",
+          "updatedAt": "2024-12-04T07:10:40Z",
+          "comments": [
+            {
+              "originalPosition": 130,
+              "body": "Fair point. But then I'd want to mandate that APs are in the external senders list, because we want the HPKE public keys that we encrypt secrets to to be authenticated somehow.\r\n\r\nNow that I think about it, having them in the external senders is in fact a much nicer approach. I'll change it.",
+              "createdAt": "2024-12-04T07:08:51Z",
+              "updatedAt": "2024-12-04T07:10:40Z"
+            },
+            {
+              "originalPosition": 289,
+              "body": "Heh. \"keys\" was meant as a verb, but it's probably a bit unusual. I'll change it to something that makes the sentence easier to parse.",
+              "createdAt": "2024-12-04T07:10:06Z",
+              "updatedAt": "2024-12-04T07:10:40Z"
+            }
+          ]
+        }
+      ]
+    }
+  ]
 }
