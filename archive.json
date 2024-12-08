@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2024-12-05T00:12:49.407777+00:00",
+  "timestamp": "2024-12-08T00:13:53.696667+00:00",
   "repo": "kkohbrok/mls-associated-parties",
   "labels": [
     {
@@ -56,24 +56,26 @@
       "id": "PR_kwDOM-05js6D6FCn",
       "title": "Cutting, restructuring, more explanations",
       "url": "https://github.com/kkohbrok/mls-associated-parties/pull/1",
-      "state": "OPEN",
+      "state": "MERGED",
       "author": "kkohbrok",
       "authorAssociation": "OWNER",
       "assignees": [],
       "labels": [],
       "body": "This PR cuts some parts the usefulness of which was less clear like the concept of AP Entry publishing, lifetimes of AP Entries and the ability of APs to contribute randomness to the AP key schedule.\r\n\r\nThe PR also adds some more explanations that should make the document easier to understand. It also does some minor restructuring.",
       "createdAt": "2024-12-03T15:09:05Z",
-      "updatedAt": "2024-12-04T07:23:14Z",
+      "updatedAt": "2024-12-06T07:35:33Z",
       "baseRepository": "kkohbrok/mls-associated-parties",
       "baseRefName": "main",
       "baseRefOid": "0e9d7cd251daeaf035e68ed61caa7fa437415aee",
       "headRepository": "kkohbrok/mls-associated-parties",
       "headRefName": "konrad/improvements",
       "headRefOid": "bb4416ab96f8bfcb651f6f9af35f788392dd5e3e",
-      "closedAt": null,
-      "mergedAt": null,
-      "mergedBy": null,
-      "mergeCommit": null,
+      "closedAt": "2024-12-06T07:35:33Z",
+      "mergedAt": "2024-12-06T07:35:33Z",
+      "mergedBy": "kkohbrok",
+      "mergeCommit": {
+        "oid": "2187ef703e988dc5f803a1ec3596ea2042731705"
+      },
       "comments": [],
       "reviews": [
         {
@@ -82,7 +84,7 @@
             "abbreviatedOid": "d51464f"
           },
           "author": "rohanmahy",
-          "authorAssociation": "NONE",
+          "authorAssociation": "CONTRIBUTOR",
           "state": "APPROVED",
           "body": "",
           "createdAt": "2024-12-03T19:11:11Z",
@@ -139,6 +141,19 @@
               "updatedAt": "2024-12-04T07:10:40Z"
             }
           ]
+        },
+        {
+          "id": "PRR_kwDOM-05js6T-Weo",
+          "commit": {
+            "abbreviatedOid": "bb4416a"
+          },
+          "author": "rohanmahy",
+          "authorAssociation": "CONTRIBUTOR",
+          "state": "APPROVED",
+          "body": "Looks good to me. I especially like the external senders change.",
+          "createdAt": "2024-12-05T18:41:59Z",
+          "updatedAt": "2024-12-05T18:41:59Z",
+          "comments": []
         }
       ]
     }
