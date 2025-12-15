@@ -318,7 +318,7 @@ TODO Security
 
 # IANA Considerations
 
-This document registers the AssociatedParties Component with ID 0x0006.
+This document registers the AssociatedParties Component with ID 0x0007.
 
 
 --- back
