@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2025-12-14T00:15:59.704988+00:00",
+  "timestamp": "2025-12-16T00:15:22.359542+00:00",
   "repo": "kkohbrok/mls-associated-parties",
   "labels": [
     {
@@ -154,6 +154,61 @@
           "createdAt": "2024-12-05T18:41:59Z",
           "updatedAt": "2024-12-05T18:41:59Z",
           "comments": []
+        }
+      ]
+    },
+    {
+      "number": 2,
+      "id": "PR_kwDOM-05js649r1w",
+      "title": "Reserve a component ID",
+      "url": "https://github.com/kkohbrok/mls-associated-parties/pull/2",
+      "state": "OPEN",
+      "author": "rohanmahy",
+      "authorAssociation": "CONTRIBUTOR",
+      "assignees": [],
+      "labels": [],
+      "body": "",
+      "createdAt": "2025-12-15T16:22:25Z",
+      "updatedAt": "2025-12-15T16:32:37Z",
+      "baseRepository": "kkohbrok/mls-associated-parties",
+      "baseRefName": "main",
+      "baseRefOid": "2187ef703e988dc5f803a1ec3596ea2042731705",
+      "headRepository": "rohanmahy/mls-associated-parties",
+      "headRefName": "component-id",
+      "headRefOid": "b7c0559cbfd78c5abed32e00f41201abf690412c",
+      "closedAt": null,
+      "mergedAt": null,
+      "mergedBy": null,
+      "mergeCommit": null,
+      "comments": [
+        {
+          "author": "rohanmahy",
+          "authorAssociation": "CONTRIBUTOR",
+          "body": "I reserved these (first for adopted WG items, then in order of original publication) for all MLS drafts with a component id:\r\n- 0x0006 `apq_info` - PQ combiners draft\r\n- 0x0007 `associated_parties` - this draft\r\n- 0x0008 `external_receivers` - semiprivate message draft\r\n- 0x0009 `key_package_core_hash` - single-signature-keypackages draft\r\n- 0x000A `root_private_signature_key` - private external messages draft\r\n- 0x000B `external_encryption_public_key` - private external messages draft",
+          "createdAt": "2025-12-15T16:32:37Z",
+          "updatedAt": "2025-12-15T16:32:37Z"
+        }
+      ],
+      "reviews": [
+        {
+          "id": "PRR_kwDOM-05js7VVFwi",
+          "commit": {
+            "abbreviatedOid": "b762103"
+          },
+          "author": "rohanmahy",
+          "authorAssociation": "CONTRIBUTOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-12-15T16:23:22Z",
+          "updatedAt": "2025-12-15T16:23:28Z",
+          "comments": [
+            {
+              "originalPosition": 5,
+              "body": "```suggestion\r\nThis document registers the AssociatedParties Component with ID 0x0007.\r\n```",
+              "createdAt": "2025-12-15T16:23:22Z",
+              "updatedAt": "2025-12-15T16:23:28Z"
+            }
+          ]
         }
       ]
     }
