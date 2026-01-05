@@ -5,7 +5,7 @@
 Messaging Layer Security                                      K. Kohbrok
 Internet-Draft                                                 R. Robert
 Intended status: Informational                               Phoenix R&D
-Expires: 9 June 2025                                     6 December 2024
+Expires: 9 July 2026                                      5 January 2026
 
 
                          MLS Associated parties
@@ -58,11 +58,11 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 9 June 2025.
+   This Internet-Draft will expire on 9 July 2026.
 
 Copyright Notice
 
-   Copyright (c) 2024 IETF Trust and the persons identified as the
+   Copyright (c) 2026 IETF Trust and the persons identified as the
    document authors.  All rights reserved.
 
    This document is subject to BCP 78 and the IETF Trust's Legal
@@ -350,8 +350,8 @@ ap_commit_secret --> KDF.Extract
 
 8.  IANA Considerations
 
-   This document registers the AssociatedParties extension with ID
-   0xXXXX.
+   This document registers the AssociatedParties Component with ID
+   0x0007.
 
 Acknowledgments
 
