@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2026-01-04T00:16:31.838077+00:00",
+  "timestamp": "2026-01-06T00:15:07.124052+00:00",
   "repo": "kkohbrok/mls-associated-parties",
   "labels": [
     {
@@ -162,24 +162,26 @@
       "id": "PR_kwDOM-05js649r1w",
       "title": "Reserve a component ID",
       "url": "https://github.com/kkohbrok/mls-associated-parties/pull/2",
-      "state": "OPEN",
+      "state": "MERGED",
       "author": "rohanmahy",
       "authorAssociation": "CONTRIBUTOR",
       "assignees": [],
       "labels": [],
       "body": "",
       "createdAt": "2025-12-15T16:22:25Z",
-      "updatedAt": "2025-12-15T16:32:37Z",
+      "updatedAt": "2026-01-05T13:52:47Z",
       "baseRepository": "kkohbrok/mls-associated-parties",
       "baseRefName": "main",
       "baseRefOid": "2187ef703e988dc5f803a1ec3596ea2042731705",
       "headRepository": "rohanmahy/mls-associated-parties",
       "headRefName": "component-id",
       "headRefOid": "b7c0559cbfd78c5abed32e00f41201abf690412c",
-      "closedAt": null,
-      "mergedAt": null,
-      "mergedBy": null,
-      "mergeCommit": null,
+      "closedAt": "2026-01-05T13:52:47Z",
+      "mergedAt": "2026-01-05T13:52:47Z",
+      "mergedBy": "kkohbrok",
+      "mergeCommit": {
+        "oid": "a5c353964eb01339864842f3e419d21a03888b30"
+      },
       "comments": [
         {
           "author": "rohanmahy",
@@ -209,6 +211,19 @@
               "updatedAt": "2025-12-15T16:23:28Z"
             }
           ]
+        },
+        {
+          "id": "PRR_kwDOM-05js7YLn1W",
+          "commit": {
+            "abbreviatedOid": "b7c0559"
+          },
+          "author": "kkohbrok",
+          "authorAssociation": "OWNER",
+          "state": "APPROVED",
+          "body": "Thanks!",
+          "createdAt": "2026-01-05T13:52:34Z",
+          "updatedAt": "2026-01-05T13:52:34Z",
+          "comments": []
         }
       ]
     }
